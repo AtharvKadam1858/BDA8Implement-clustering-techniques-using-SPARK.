@@ -1,0 +1,33 @@
+!wget https://archive.apache.org/dist/spark/spark-3.4.0/spark-3.4.0-bin-hadoop3.tgz
+
+!apt-get install openjdk-17-jdk-headless -qq
+
+!tar -xzf spark-3.4.0-bin-hadoop3.tgz
+
+
+!pip install -q findspark
+
+
+import findspark
+findspark.init("/content/spark-3.4.0-bin-hadoop3")
+
+from pyspark.sql import SparkSession
+spark = SparkSession.builder.appName("BDA Lab").getOrCreate()
+print("Spark Ready!")
+
+from pyspark.ml.clustering import KMeans
+from pyspark.ml.linalg import Vectors
+
+data = [(1.0,1.0), (2.0,1.0), (1.0,2.0),
+        (8.0,8.0), (9.0,8.0), (8.0,9.0)]
+
+df = spark.createDataFrame([(Vectors.dense(x),) for x in data], ["features"])
+
+kmeans = KMeans(k=2)
+model = kmeans.fit(df)
+
+print("Cluster Centers:")
+for c in model.clusterCenters():
+    print(c)
+
+model.transform(df).show()
